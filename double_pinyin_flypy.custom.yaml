@@ -1,0 +1,81 @@
+patch:
+  switches:
+    - name: ascii_mode
+      reset: 1 # 1为默认英文，0为默认中文 
+      states: [中文, 西文]
+    - name: simplification
+      reset: 1                # 增加這一行：默認啓用「繁→簡」轉換。
+      states: [ 漢字, 汉字 ]
+      
+  # 以回車清除編碼串，分號、單引號鍵選擇2、3候選
+  key_binder/bindings:
+    - { when: composing, accept: Return, send: Escape }
+    # - { when: has_menu, accept: semicolon, send: 2 }
+    # - { when: has_menu, accept: apostrophe, send: 3 }
+    # vim 在esc键按下后弹起时，将当前输入方式切换为英文
+    - { when: always, accept: Release+Escape, toggle: ascii_mode}
+
+  # 符号配置
+  punctuator:
+    import_preset: symbols
+    symbols:
+      "/fs": [½, ‰, ¼, ⅓, ⅔, ¾, ⅒ ]
+      "/xh": [ ＊, ×, ✱, ★, ☆, ✩, ✧, ❋, ❊, ❉, ❈, ❅, ✿, ✲]
+      "/dq": [🌍,🌎,🌏,🌐,🌑,🌒,🌓,🌔,🌕,🌖,🌗,🌘]
+      "/sg": [🍇,🍉,🍌,🍍,🍎,🍏,🍑,🍒,🍓,🍗,🍦,🎂,🍺,🍻]
+      "/dw": [🙈,🐵,🐈,🐷,🐨,🐼,🐾,🐔,🐬,🐠,🦋]
+      "/bq": [😀,😁,😂,😃,😄,😅,😆,😉,😊,😋,😎,😍,😘,😗]
+      "/ss": [💪,👈,👉,👆,👇,✋,👌,👍,👎,✊,👊,👋,👏,👐]
+    half_shape:
+      "#": "#"
+      "*": "*"
+      "`": "`"
+      "~": "~"
+      "@": "@"
+      "=": "="
+      '\': "、"
+      "%": "%"
+      "$": ["¥", "$", "€", "£", "¢", "¤"]
+      "|": ["|", "｜", "·", "・", "§", "¦", "‖", "︴"]
+      "/": ["/", "÷"]
+      "[": ["【", "〔", "［"]
+      "]": ["】", "〕", "］"]
+      "<": "《"
+      ">": "》"
+
+  recognizer/patterns/punct: "^/([0-9]0?|[A-Za-z]+)$"
+
+
+  # 载入custom_phrase自定义短语
+  engine/translators:
+    - punct_translator
+    - reverse_lookup_translator
+    - script_translator
+    - table_translator@custom_phrase # 表示调用 custom_phrase段编码
+    #- table_translator
+    #- lua_translator@date_time_translator
+  custom_phrase:
+    dictionary: ""
+    user_dict: custom_phrase
+    db_class: stabledb
+    enable_completion: false
+    enable_sentence: false
+    initial_quality: 1
+
+  # 表情建议
+  switches/@next:
+    name: emoji_suggestion
+    reset: 1
+    states: [ "🈚️️\uFE0E", "🈶️️\uFE0F" ]
+  'engine/filters/@before 0':
+    simplifier@emoji_suggestion
+  emoji_suggestion:
+    opencc_config: emoji.json
+    option_name: emoji_suggestion
+    tips: all
+
+  #載入朙月拼音擴充詞庫
+  'translator/dictionary': extended
+
+  # librime-lua 输入动态时间和日期
+  "engine/translators/@6": lua_translator@date_time_translator

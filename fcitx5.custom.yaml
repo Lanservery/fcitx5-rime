@@ -1,0 +1,6 @@
+patch:
+  "app_options/wps":
+    ascii_mode: false
+  "app_options/firefox-esr":
+    ascii_mode: true
+
